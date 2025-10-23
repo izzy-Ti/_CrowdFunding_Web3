@@ -4,11 +4,12 @@ import { App } from "./App";
 import { ThirdwebProvider } from "thirdweb/react";
 import "./index.css";
 import { StateContextProvider } from "./context";
+import { client } from "./client";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThirdwebProvider>
-      <StateContextProvider >
+    <ThirdwebProvider client={client}>
+      <StateContextProvider>
         <App />
       </StateContextProvider>
     </ThirdwebProvider>

@@ -1,98 +1,77 @@
-import { ConnectButton } from "thirdweb/react";
-import thirdwebIcon from "./thirdweb.svg";
-import { client } from "./client";
+import React, { useState } from 'react';
+import { Header, CampaignsList, CreateCampaign } from './components';
 
 export function App() {
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'create'>('campaigns');
+
 	return (
-		<main className="p-4 pb-10 min-h-[100vh] flex items-center justify-center container max-w-screen-lg mx-auto">
-			<div className="py-20">
+    <div className="min-h-screen bg-black">
+      {/* Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-500/10 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Header */}
 				<Header />
 
-				<div className="flex justify-center mb-20">
-					<ConnectButton
-						client={client}
-						appMetadata={{
-							name: "Example app",
-							url: "https://example.com",
-						}}
-					/>
+      {/* Main Content */}
+      <main className="relative z-10">
+        {/* Navigation Tabs */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="flex justify-center mb-8">
+            <div className="bg-black/60 backdrop-blur-sm border border-green-500/20 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('campaigns')}
+                className={`px-6 py-3 rounded-md font-semibold transition-all duration-200 ${
+                  activeTab === 'campaigns'
+                    ? 'bg-green-500 text-black shadow-lg shadow-green-500/25'
+                    : 'text-gray-400 hover:text-green-400'
+                }`}
+              >
+                Browse Campaigns
+              </button>
+              <button
+                onClick={() => setActiveTab('create')}
+                className={`px-6 py-3 rounded-md font-semibold transition-all duration-200 ${
+                  activeTab === 'create'
+                    ? 'bg-green-500 text-black shadow-lg shadow-green-500/25'
+                    : 'text-gray-400 hover:text-green-400'
+                }`}
+              >
+                Create Campaign
+              </button>
+            </div>
+          </div>
 				</div>
 
-				<ThirdwebResources />
-			</div>
+        {/* Tab Content */}
+        {activeTab === 'campaigns' ? <CampaignsList /> : <CreateCampaign />}
 		</main>
-	);
-}
 
-function Header() {
-	return (
-		<header className="flex flex-col items-center mb-20 md:mb-20">
-			<img
-				src={thirdwebIcon}
-				alt=""
-				className="size-[150px] md:size-[150px]"
-				style={{
-					filter: "drop-shadow(0px 0px 24px #a726a9a8)",
-				}}
-			/>
-
-			<h1 className="text-2xl md:text-6xl font-bold tracking-tighter mb-6 text-zinc-100">
-				thirdweb SDK
-				<span className="text-zinc-300 inline-block mx-1"> + </span>
-				<span className="inline-block -skew-x-6 text-violet-500"> vite </span>
-			</h1>
-
-			<p className="text-zinc-300 text-base">
-				Read the{" "}
-				<code className="bg-zinc-800 text-zinc-300 px-2 rounded py-1 text-sm mx-1">
-					README.md
-				</code>{" "}
-				file to get started.
-			</p>
-		</header>
-	);
-}
-
-function ThirdwebResources() {
-	return (
-		<div className="grid gap-4 lg:grid-cols-3 justify-center">
-			<ArticleCard
-				title="thirdweb SDK Docs"
-				href="https://portal.thirdweb.com/typescript/v5"
-				description="thirdweb TypeScript SDK documentation"
-			/>
-
-			<ArticleCard
-				title="Components and Hooks"
-				href="https://portal.thirdweb.com/typescript/v5/react"
-				description="Learn about the thirdweb React components and hooks in thirdweb SDK"
-			/>
-
-			<ArticleCard
-				title="thirdweb Dashboard"
-				href="https://thirdweb.com/dashboard"
-				description="Deploy, configure, and manage your smart contracts from the dashboard."
-			/>
+      {/* Footer */}
+      <footer className="relative z-10 bg-black/60 backdrop-blur-sm border-t border-green-500/20 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-sm">CF</span>
+              </div>
+              <h3 className="text-xl font-bold text-white">
+                <span className="text-green-400">Crowd</span>Fund
+              </h3>
+            </div>
+            <p className="text-gray-400 text-sm">
+              Decentralized crowdfunding platform built on blockchain
+            </p>
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              <p className="text-gray-500 text-xs">
+                © 2024 CrowdFund DApp. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
 		</div>
-	);
-}
-
-function ArticleCard(props: {
-	title: string;
-	href: string;
-	description: string;
-}) {
-	return (
-		<a
-			href={`${props.href}?utm_source=vite-template`}
-			target="_blank"
-			className="flex flex-col border border-zinc-800 p-4 rounded-lg hover:bg-zinc-900 transition-colors hover:border-zinc-700"
-			rel="noreferrer"
-		>
-			<article>
-				<h2 className="text-lg font-semibold mb-2">{props.title}</h2>
-				<p className="text-sm text-zinc-400">{props.description}</p>
-			</article>
-		</a>
 	);
 }
