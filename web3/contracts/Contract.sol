@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 contract CrowdFunding {
-    struct campaign {
+    struct Campaign {
         address owner;
         string title;
         string description;
@@ -14,7 +14,7 @@ contract CrowdFunding {
         uint256[] donatersamount;
     }
 
-    mapping(uint256 => campaign) public campaigns;
+    mapping(uint256 => Campaign) public campaigns;
     uint public NoOfCampains = 0 ;
 
     function createCampaign (address _owner, string memory _title, string memory _description, 
@@ -38,8 +38,8 @@ contract CrowdFunding {
 
         Campaign storage campaign = campaigns [_id];
 
-        campaign.donators[].push(msg.sender);
-        campaign.donatersamount[].push(amount);
+        campaign.donators.push(msg.sender);
+        campaign.donatersamount.push(amount);
 
         (bool sent,) = payable (campaign.owner).call{value: amount}("");
 
@@ -55,7 +55,7 @@ contract CrowdFunding {
         Campaign[] memory newCampaign = new Campaign[](NoOfCampains);
 
         for(uint i=0 ; i< NoOfCampains; i++){
-            campaign storage item = campaign[i];
+            Campaign storage item = campaigns[i];
 
             newCampaign[i] = item;
 

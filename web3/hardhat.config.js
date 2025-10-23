@@ -1,6 +1,6 @@
 require("@matterlabs/hardhat-zksync-solc");
 require("@matterlabs/hardhat-zksync-verify");
-
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -21,6 +21,7 @@ module.exports = {
       chainId: 300,
       verifyURL:
         "https://explorer.sepolia.era.zksync.dev/contract_verification",
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
     },
     zkSyncMainnet: {
       url: "https://mainnet.era.zksync.io",
