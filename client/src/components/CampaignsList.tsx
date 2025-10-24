@@ -15,32 +15,32 @@ interface Campaign {
 }
 
 const CampaignsList: React.FC = () => {
-  const { contract, address, donateToCampaign } = useStateContext();
+  const { contract, address, donateToCampaign, fetchCampaigns } = useStateContext();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCampaigns = async () => {
+  const loadCampaigns = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // For now, we'll show a placeholder message
-      // You'll need to implement the actual contract reading
       console.log("Fetching campaigns...");
       
-      // Mock data for demonstration
-      setCampaigns([]);
+      // Fetch campaigns from contract
+      const fetchedCampaigns = await fetchCampaigns();
+      setCampaigns(fetchedCampaigns);
+      
     } catch (err) {
       console.error('Failed to fetch campaigns:', err);
-      setError('Failed to load campaigns. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load campaigns');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCampaigns();
+    loadCampaigns();
   }, [contract]);
 
   const handleDonate = async (campaignId: number, amount: string) => {
@@ -52,7 +52,7 @@ const CampaignsList: React.FC = () => {
     try {
       await donateToCampaign(campaignId, amount);
       // Refresh campaigns after donation
-      await fetchCampaigns();
+      await loadCampaigns();
       alert('Donation successful!');
     } catch (error) {
       console.error('Donation failed:', error);
@@ -81,7 +81,7 @@ const CampaignsList: React.FC = () => {
           <h3 className="text-xl font-semibold text-white mb-2">Error Loading Campaigns</h3>
           <p className="text-gray-400 mb-4">{error}</p>
           <button
-            onClick={fetchCampaigns}
+            onClick={loadCampaigns}
             className="px-6 py-2 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-400 transition-colors duration-200"
           >
             Try Again
@@ -141,7 +141,7 @@ const CampaignsList: React.FC = () => {
         {/* Refresh Button */}
         <div className="text-center mt-12">
           <button
-            onClick={fetchCampaigns}
+            onClick={loadCampaigns}
             className="px-6 py-3 bg-black/60 border border-green-500/30 text-green-400 font-semibold rounded-lg hover:bg-green-500/10 hover:border-green-500/50 transition-all duration-200"
           >
             Refresh Campaigns

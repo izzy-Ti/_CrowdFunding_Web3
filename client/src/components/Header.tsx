@@ -4,10 +4,11 @@ import { client } from "../client";
 import { useStateContext } from "../context";
 
 interface HeaderProps {
-  onConnect?: () => void;
+  activeTab: 'campaigns' | 'create' | 'about';
+  setActiveTab: (tab: 'campaigns' | 'create' | 'about') => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onConnect }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const { address } = useStateContext();
   return (
     <header className="bg-black/90 backdrop-blur-sm border-b border-green-500/20 sticky top-0 z-50">
@@ -25,15 +26,30 @@ const Header: React.FC<HeaderProps> = ({ onConnect }) => {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <a href="#campaigns" className="text-gray-300 hover:text-green-400 transition-colors duration-200">
+            <button 
+              onClick={() => setActiveTab('campaigns')}
+              className={`transition-colors duration-200 ${
+                activeTab === 'campaigns' ? 'text-green-400' : 'text-gray-300 hover:text-green-400'
+              }`}
+            >
               Campaigns
-            </a>
-            <a href="#create" className="text-gray-300 hover:text-green-400 transition-colors duration-200">
+            </button>
+            <button 
+              onClick={() => setActiveTab('create')}
+              className={`transition-colors duration-200 ${
+                activeTab === 'create' ? 'text-green-400' : 'text-gray-300 hover:text-green-400'
+              }`}
+            >
               Create
-            </a>
-            <a href="#about" className="text-gray-300 hover:text-green-400 transition-colors duration-200">
+            </button>
+            <button 
+              onClick={() => setActiveTab('about')}
+              className={`transition-colors duration-200 ${
+                activeTab === 'about' ? 'text-green-400' : 'text-gray-300 hover:text-green-400'
+              }`}
+            >
               About
-            </a>
+            </button>
           </nav>
 
           {/* Connect Button and Status */}

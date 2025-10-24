@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Header, CampaignsList, CreateCampaign } from './components';
+import { Header, CampaignsList, CreateCampaign, AboutPage } from './components';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'create'>('campaigns');
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'create' | 'about'>('campaigns');
 
 	return (
     <div className="min-h-screen bg-black">
@@ -13,7 +13,7 @@ export function App() {
       </div>
 
       {/* Header */}
-				<Header />
+			<Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
       <main className="relative z-10">
@@ -23,7 +23,7 @@ export function App() {
             <div className="bg-black/60 backdrop-blur-sm border border-green-500/20 rounded-lg p-1">
               <button
                 onClick={() => setActiveTab('campaigns')}
-                className={`px-6 py-3 rounded-md font-semibold transition-all duration-200 ${
+                className={`px-4 py-3 rounded-md font-semibold transition-all duration-200 ${
                   activeTab === 'campaigns'
                     ? 'bg-green-500 text-black shadow-lg shadow-green-500/25'
                     : 'text-gray-400 hover:text-green-400'
@@ -33,7 +33,7 @@ export function App() {
               </button>
               <button
                 onClick={() => setActiveTab('create')}
-                className={`px-6 py-3 rounded-md font-semibold transition-all duration-200 ${
+                className={`px-4 py-3 rounded-md font-semibold transition-all duration-200 ${
                   activeTab === 'create'
                     ? 'bg-green-500 text-black shadow-lg shadow-green-500/25'
                     : 'text-gray-400 hover:text-green-400'
@@ -41,12 +41,24 @@ export function App() {
               >
                 Create Campaign
               </button>
+              <button
+                onClick={() => setActiveTab('about')}
+                className={`px-4 py-3 rounded-md font-semibold transition-all duration-200 ${
+                  activeTab === 'about'
+                    ? 'bg-green-500 text-black shadow-lg shadow-green-500/25'
+                    : 'text-gray-400 hover:text-green-400'
+                }`}
+              >
+                About
+              </button>
             </div>
           </div>
 				</div>
 
         {/* Tab Content */}
-        {activeTab === 'campaigns' ? <CampaignsList /> : <CreateCampaign />}
+        {activeTab === 'campaigns' && <CampaignsList />}
+        {activeTab === 'create' && <CreateCampaign />}
+        {activeTab === 'about' && <AboutPage />}
 		</main>
 
       {/* Footer */}

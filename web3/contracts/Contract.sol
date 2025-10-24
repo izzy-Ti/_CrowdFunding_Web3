@@ -1,5 +1,6 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.8.2 <0.9.0;
 
 contract CrowdFunding {
     struct Campaign {
@@ -20,7 +21,7 @@ contract CrowdFunding {
     function createCampaign (address _owner, string memory _title, string memory _description, 
         uint _target, uint _deadline, string memory _image) public returns( uint) {
         Campaign storage campaign = campaigns [NoOfCampains];
-        require(campaign.deadline < block.timestamp , "Sorry the deadline must be in future");
+        require(campaign.deadline > block.timestamp , "Sorry the deadline must be in future");
 
         campaign.owner = _owner;
         campaign.title = _title;
@@ -58,8 +59,7 @@ contract CrowdFunding {
             Campaign storage item = campaigns[i];
 
             newCampaign[i] = item;
-
-            return newCampaign;
         }
+        return newCampaign;
     }
 }

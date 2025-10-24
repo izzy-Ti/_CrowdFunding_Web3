@@ -25,6 +25,11 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, id, onDonate }) =
   const [donationAmount, setDonationAmount] = React.useState('');
   const [isDonating, setIsDonating] = React.useState(false);
 
+  // Debug logging
+  console.log(`CampaignCard ${id} received:`, campaign);
+  console.log(`CampaignCard ${id} title:`, campaign.title);
+  console.log(`CampaignCard ${id} description:`, campaign.description);
+
   const target = parseFloat(campaign.target);
   const collected = parseFloat(campaign.amountcollected);
   const progress = calculateProgress(collected, target);
@@ -83,10 +88,10 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, id, onDonate }) =
       {/* Campaign Content */}
       <div className="p-6">
         <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
-          {campaign.title}
+          {campaign.title || 'Untitled Campaign'}
         </h3>
         <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-          {campaign.description}
+          {campaign.description || 'No description provided'}
         </p>
 
         {/* Progress Bar */}

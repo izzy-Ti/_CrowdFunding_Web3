@@ -10,7 +10,7 @@ interface FormData {
 }
 
 const CreateCampaign: React.FC = () => {
-  const { createCampaign, address } = useStateContext();
+  const { createCampaign, address, fetchCampaigns } = useStateContext();
   const [form, setForm] = useState<FormData>({
     title: '',
     description: '',
@@ -41,7 +41,9 @@ const CreateCampaign: React.FC = () => {
 
     setIsCreating(true);
     try {
-      await createCampaign(form);
+      const result = await createCampaign(form);
+      console.log("Campaign creation result:", result);
+      
       setForm({
         title: '',
         description: '',
@@ -49,7 +51,16 @@ const CreateCampaign: React.FC = () => {
         deadline: '',
         image: ''
       });
+      
       alert('Campaign created successfully!');
+      
+      // Refresh campaigns to show the new one
+      try {
+        await fetchCampaigns();
+        console.log("Campaigns refreshed after creation");
+      } catch (refreshError) {
+        console.error("Failed to refresh campaigns:", refreshError);
+      }
     } catch (error) {
       console.error('Failed to create campaign:', error);
       alert('Failed to create campaign. Please try again.');
