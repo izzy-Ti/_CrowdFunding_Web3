@@ -4,11 +4,32 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   define: { global: 'globalThis' },
-  resolve: { alias: { buffer: 'buffer' } },
-  optimizeDeps: { include: ['buffer'], force: true },
-  server: { hmr: { overlay: false } },
-  build: {
-    target: 'esnext',       // add this
-    rollupOptions: { external: [] },
+  resolve: { 
+    alias: { 
+      buffer: 'buffer',
+      util: 'util/',
+    } 
   },
+  optimizeDeps: { 
+    include: ['buffer', 'util'],
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  },
+  server: { 
+    hmr: { overlay: false },
+    port: 5173
+  },
+  build: {
+    target: 'es2020',
+    rollupOptions: { 
+      external: [],
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          thirdweb: ['@thirdweb-dev/react', '@thirdweb-dev/sdk']
+        }
+      }
+    }
+  }
 });
