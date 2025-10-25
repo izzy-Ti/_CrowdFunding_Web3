@@ -98,18 +98,24 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
             });
             
             // Convert deadline to timestamp
-            const deadlineTimestamp = Math.floor(new Date(form.deadline).getTime() / 1000);
+            const deadlineDate = new Date(form.deadline);
+            if (isNaN(deadlineDate.getTime())) {
+                throw new Error("Invalid date format. Please use YYYY-MM-DDTHH:MM format");
+            }
+            
+            const deadlineTimestamp = Math.floor(deadlineDate.getTime() / 1000);
             const currentTimestamp = Math.floor(Date.now() / 1000);
             
-            console.log("Deadline timestamp:", deadlineTimestamp);
-            console.log("Current timestamp:", currentTimestamp);
-            console.log("Original deadline string:", form.deadline);
-            console.log("Parsed date:", new Date(form.deadline));
-            console.log("Is deadline in future?", deadlineTimestamp > currentTimestamp);
+            console.log("Deadline date string:", form.deadline);
+            console.log("Parsed deadline date:", deadlineDate);
+            console.log("Deadline timestamp (seconds):", deadlineTimestamp);
+            console.log("Current timestamp (seconds):", currentTimestamp);
+            console.log("Time remaining (seconds):", deadlineTimestamp - currentTimestamp);
             
-            // Validate deadline is in the future
-            if (deadlineTimestamp <= currentTimestamp) {
-                throw new Error("Deadline must be in the future");
+            // Validate deadline is in the future (with at least 1 hour buffer)
+            const oneHourInSeconds = 3600;
+            if (deadlineTimestamp <= currentTimestamp + oneHourInSeconds) {
+                throw new Error("Deadline must be at least 1 hour in the future");
             }
             
             // Prepare the contract call
@@ -170,25 +176,46 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
             
             console.log("Donating to campaign:", campaignId, amount);
             
+            // Convert amount to wei for the contract
+            const weiAmount = parseEther(amount);
+            console.log(`Donating ${amount} ETH (${weiAmount} wei) to campaign ${campaignId}`);
+            
             // Prepare the contract call
             const transaction = prepareContractCall({
                 contract,
                 method: "DonateCampaign",
                 params: [BigInt(campaignId)],
-                value: parseEther(amount)
+                value: weiAmount
             });
             
             // Send the transaction
+            console.log("Sending donation transaction...");
             const result = await sendTransaction({
                 transaction,
                 account: account!
             });
             
-            console.log("Donation successful:", result);
-            return { success: true, message: "Donation successful!", transactionHash: result.transactionHash };
+            console.log("Donation transaction sent:", result);
+            
+            // Wait for the transaction to be mined
+            console.log("Waiting for transaction to be confirmed...");
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
+            
+            // Refresh the campaigns to update the UI
+            console.log("Refreshing campaigns...");
+            await fetchCampaigns();
+            
+            console.log("Donation successful and campaigns refreshed");
+            return { 
+                success: true, 
+                message: `Successfully donated ${amount} ETH!`, 
+                transactionHash: result.transactionHash 
+            };
         } catch (err) {
-            console.log(`donation failure`, err);
-            alert(`Failed to donate: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            console.error("Donation failed:", err);
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            console.error("Error details:", { error: err });
+            alert(`Failed to donate: ${errorMessage}`);
             throw err;
         }
     };
@@ -218,16 +245,42 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
                 console.log(`Campaign ${index} title:`, campaign.title);
                 console.log(`Campaign ${index} description:`, campaign.description);
                 
+                // Convert BigInt values to strings for proper handling
+                const targetWei = typeof campaign.target === 'bigint' 
+                    ? campaign.target.toString() 
+                    : campaign.target;
+                    
+                const amountCollectedWei = typeof campaign.amountcollected === 'bigint'
+                    ? campaign.amountcollected.toString()
+                    : campaign.amountcollected;
+                
+                // Log raw values for debugging
+                console.log(`Campaign ${index} raw target:`, campaign.target, 'type:', typeof campaign.target);
+                console.log(`Campaign ${index} raw amount collected:`, campaign.amountcollected, 'type:', typeof campaign.amountcollected);
+                
+                // Convert from wei to ETH with proper decimal handling
+                const targetEth = (Number(targetWei) / 1e18).toFixed(6);
+                const amountCollectedEth = (Number(amountCollectedWei) / 1e18).toFixed(6);
+                
+                console.log(`Campaign ${index} target (ETH):`, targetEth);
+                console.log(`Campaign ${index} amount collected (ETH):`, amountCollectedEth);
+                
+                // Format donators amounts
+                const formattedDonations = campaign.donatersamount.map((amount: any) => {
+                    const amountWei = typeof amount === 'bigint' ? amount.toString() : amount;
+                    return (Number(amountWei) / 1e18).toFixed(6);
+                });
+                
                 return {
                     owner: campaign.owner,
                     title: campaign.title,
                     description: campaign.description,
-                    target: (Number(campaign.target) / 1e18).toString(), // Convert from wei to ETH
-                    deadline: new Date(Number(campaign.deadline) * 1000).toISOString(), // Convert timestamp to date
-                    amountcollected: (Number(campaign.amountcollected) / 1e18).toString(), // Convert from wei to ETH
+                    target: targetEth,
+                    deadline: new Date(Number(campaign.deadline) * 1000).toISOString(),
+                    amountcollected: amountCollectedEth,
                     image: campaign.image,
                     donators: campaign.donators,
-                    donatersamount: campaign.donatersamount.map((amount: bigint) => (Number(amount) / 1e18).toString())
+                    donatersamount: formattedDonations
                 };
             });
             

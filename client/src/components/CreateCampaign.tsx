@@ -26,9 +26,21 @@ const CreateCampaign: React.FC = () => {
   console.log("CreateCampaign - Address length:", address?.length);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Special handling for date input
+    if (name === 'deadline') {
+      // Ensure the date is in the correct format for the datetime-local input
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', value);
+        return;
+      }
+    }
+    
     setForm(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
   };
 

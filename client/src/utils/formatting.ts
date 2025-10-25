@@ -34,16 +34,49 @@ export const formatAddress = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
+// Parse date from various formats
+const parseDate = (dateInput: string | number): Date => {
+  // If it's already a Date object
+  if (dateInput instanceof Date) return dateInput;
+  
+  // If it's a string that looks like an ISO date
+  if (typeof dateInput === 'string' && dateInput.includes('T')) {
+    return new Date(dateInput);
+  }
+  
+  // If it's a number or numeric string (assuming it's a timestamp)
+  const num = typeof dateInput === 'string' ? parseInt(dateInput) : dateInput;
+  
+  // If it's a Unix timestamp in seconds, convert to milliseconds
+  if (num < 1e12) return new Date(num * 1000);
+  
+  // Otherwise assume it's already in milliseconds
+  return new Date(num);
+};
+
 // Format dates
-export const formatDate = (timestamp: string | number): string => {
-  const date = new Date(typeof timestamp === 'string' ? parseInt(timestamp) : timestamp);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+export const formatDate = (dateInput: string | number): string => {
+  try {
+    const date = parseDate(dateInput);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', dateInput);
+      return 'Invalid date';
+    }
+    
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'UTC' // Ensure consistent timezone display
+    }) + ' UTC'; // Add UTC indicator
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
 };
 
 // Calculate time remaining
@@ -51,21 +84,69 @@ export const getTimeRemaining = (deadline: string | number): {
   days: number; 
   hours: number; 
   minutes: number; 
-  isExpired: boolean 
+  isExpired: boolean;
+  formatted: string;
 } => {
-  const now = new Date().getTime();
-  const deadlineTime = typeof deadline === 'string' ? parseInt(deadline) : deadline;
-  const difference = deadlineTime - now;
-
-  if (difference <= 0) {
-    return { days: 0, hours: 0, minutes: 0, isExpired: true };
+  try {
+    const now = new Date().getTime();
+    const deadlineDate = parseDate(deadline);
+    const deadlineTime = deadlineDate.getTime();
+    
+    if (isNaN(deadlineTime)) {
+      console.error('Invalid deadline:', deadline);
+      return { 
+        days: 0, 
+        hours: 0, 
+        minutes: 0, 
+        isExpired: true,
+        formatted: 'Invalid date'
+      };
+    }
+    
+    const difference = deadlineTime - now;
+    const isExpired = difference <= 0;
+    
+    if (isExpired) {
+      return { 
+        days: 0, 
+        hours: 0, 
+        minutes: 0, 
+        isExpired: true,
+        formatted: 'Ended'
+      };
+    }
+    
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // Format the remaining time
+    let formatted = '';
+    if (days > 0) {
+      formatted += `${days} day${days > 1 ? 's' : ''} `;
+    }
+    if (hours > 0 || days > 0) {
+      formatted += `${hours} hour${hours !== 1 ? 's' : ''} `;
+    }
+    formatted += `${minutes} minute${minutes !== 1 ? 's' : ''} left`;
+    
+    return { 
+      days, 
+      hours, 
+      minutes, 
+      isExpired: false,
+      formatted: formatted.trim()
+    };
+  } catch (error) {
+    console.error('Error calculating time remaining:', error);
+    return { 
+      days: 0, 
+      hours: 0, 
+      minutes: 0, 
+      isExpired: true,
+      formatted: 'Error'
+    };
   }
-
-  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-  return { days, hours, minutes, isExpired: false };
 };
 
 // Calculate progress percentage

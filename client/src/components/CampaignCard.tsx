@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStateContext } from '../context';
-import { formatCurrency, formatDate, calculateProgress, getTimeRemaining, getDefaultCampaignImage } from '../utils/formatting';
+import { formatDate, getTimeRemaining, getDefaultCampaignImage } from '../utils/formatting';
+import { calculateProgress, formatNumber } from '../utils/progressUtils';
 
 interface Campaign {
   owner: string;
@@ -30,11 +31,15 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, id, onDonate }) =
   console.log(`CampaignCard ${id} title:`, campaign.title);
   console.log(`CampaignCard ${id} description:`, campaign.description);
 
-  const target = parseFloat(campaign.target);
-  const collected = parseFloat(campaign.amountcollected);
-  const progress = calculateProgress(collected, target);
-  const { isExpired } = getTimeRemaining(campaign.deadline);
+  // Calculate progress using the utility function that handles all number types
+  const progress = calculateProgress(campaign.amountcollected, campaign.target);
+  
+  const { isExpired, formatted: timeRemaining } = getTimeRemaining(campaign.deadline);
   const campaignImage = campaign.image || getDefaultCampaignImage(campaign.title);
+  
+  // Format numbers for display using the new utility function
+  const formattedCollected = `${formatNumber(campaign.amountcollected, 4)} ETH`;
+  const formattedTarget = `${formatNumber(campaign.target, 4)} ETH`;
 
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,33 +99,33 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, id, onDonate }) =
           {campaign.description || 'No description provided'}
         </p>
 
-        {/* Progress Bar */}
+        {/* Fundraising Progress */}
         <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>Progress</span>
-            <span>{progress.toFixed(1)}%</span>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-sm text-gray-400">Raised</span>
+            <span className="text-sm font-medium text-green-400">{progress.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-gray-700 rounded-full h-2.5 mb-2">
             <div 
-              className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(progress, 100)}%` }}
+              className="bg-gradient-to-r from-green-400 to-green-600 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
             />
+          </div>
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>{formattedCollected} ETH</span>
+            <span>{formattedTarget} ETH</span>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div>
-            <p className="text-gray-400">Raised</p>
-            <p className="text-green-400 font-semibold">
-              {formatCurrency(collected)}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-400">Target</p>
-            <p className="text-white font-semibold">
-              {formatCurrency(target)}
-            </p>
+        {/* Status */}
+        <div className="mb-4">
+          <div className="flex items-center space-x-2 text-sm">
+            <span className={`inline-block w-2 h-2 rounded-full ${
+              isExpired ? 'bg-red-500' : 'bg-green-500'
+            }`}></span>
+            <span className="text-gray-400">
+              {isExpired ? 'Ended' : `Ends in ${timeRemaining}`}
+            </span>
           </div>
         </div>
 
