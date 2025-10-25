@@ -18,7 +18,13 @@ export default defineConfig({
   },
   server: { 
     hmr: { overlay: false },
-    port: 5173
+    port: 5173,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'X-Content-Type-Options': 'nosniff'
+    }
   },
   build: {
     target: 'es2020',
